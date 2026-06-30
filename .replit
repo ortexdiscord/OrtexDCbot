@@ -38,3 +38,10 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+LAVALINK_HOST = "lavalinkv4.serenetia.com"
+LAVALINK_PORT = "443"
+LAVALINK_SECURE = "true"
