@@ -1,0 +1,1 @@
+- [Lavalink-client v2 API](lavalink-client-v2.md) — key API surface: search is on player not manager, node events on lavalink.nodeManager, secure not ssl
