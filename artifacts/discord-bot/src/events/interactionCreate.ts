@@ -9,6 +9,7 @@ import {
 } from "../utils/embeds.js";
 import type { Track } from "lavalink-client";
 import { withTimeout } from "../utils/timeout.js";
+import { requireLavalink } from "../utils/health.js";
 
 export function registerInteractionCreateEvent(client: Client): void {
   client.on(Events.InteractionCreate, async (interaction) => {
@@ -30,6 +31,8 @@ export function registerInteractionCreateEvent(client: Client): void {
     if (interaction.isChatInputCommand()) {
       const command = client.commands.get(interaction.commandName);
       if (!command) return;
+
+      if (!(await requireLavalink(interaction))) return;
 
       try {
         await withTimeout(
@@ -69,6 +72,8 @@ export function registerInteractionCreateEvent(client: Client): void {
         });
         return;
       }
+
+      if (!(await requireLavalink(interaction))) return;
 
       try {
         await withTimeout(
