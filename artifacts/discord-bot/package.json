@@ -10,11 +10,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@workspace/db": "workspace:*",
     "@discordjs/rest": "^2.4.3",
+    "@workspace/db": "workspace:*",
     "discord.js": "^14.19.3",
-    "lavalink-client": "^2.4.0",
-    "drizzle-orm": "catalog:"
+    "drizzle-orm": "catalog:",
+    "jimp": "^1.6.1",
+    "lavalink-client": "^2.4.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

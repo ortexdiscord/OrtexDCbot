@@ -4,7 +4,9 @@ import { client } from "./bot.js";
 import { config } from "./config.js";
 import { db } from "@workspace/db";
 import { playHistoryTable } from "@workspace/db";
-import { nowPlayingEmbed, musicPanelButtons, successEmbed } from "./utils/embeds.js";
+import { AttachmentBuilder } from "discord.js";
+import { nowPlayingEmbed, musicPanelButtons, successEmbed, getTrackColor } from "./utils/embeds.js";
+import { gradientArtwork } from "./utils/gradient.js";
 import { updatePresence } from "./keepalive.js";
 
 export const lavalink = new LavalinkManager({
@@ -81,7 +83,27 @@ lavalink.on("trackStart", async (player: Player, track: Track | null, _payload: 
   const buttons = musicPanelButtons(player);
 
   try {
-    const msg = await (channel as { send: Function }).send({ embeds: [embed], components: buttons });
+    const payload: { embeds: unknown[]; components: unknown; files?: unknown[] } = {
+      embeds: [embed],
+      components: buttons,
+    };
+    const artworkUrl = track.info.artworkUrl;
+    if (artworkUrl) {
+      const gradientBuffer = await gradientArtwork(
+        artworkUrl,
+        getTrackColor(track) as number
+      );
+      if (gradientBuffer) {
+        const attachment = new AttachmentBuilder(gradientBuffer, {
+          name: "artwork.png",
+        });
+        embed.setImage("attachment://artwork.png");
+        payload.files = [attachment];
+      } else {
+        embed.setImage(artworkUrl);
+      }
+    }
+    const msg = await (channel as { send: Function }).send(payload);
     p["panelMessageId"] = msg.id;
     p["panelChannelId"] = channelId;
   } catch {

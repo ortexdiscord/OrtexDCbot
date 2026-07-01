@@ -17,7 +17,7 @@ function getTwelveO(player: Player): boolean {
   return (player as unknown as { twelveO?: boolean }).twelveO ?? false;
 }
 
-function getTrackColor(track: Track): ColorResolvable {
+export function getTrackColor(track: Track): ColorResolvable {
   // Try to derive a sidebar color from the track source for a music-themed vibe.
   // Discord embeds only support a single color, so we use the source brand color
   // as a stand-in for the track's gradient/dominant color.
@@ -42,10 +42,7 @@ export function nowPlayingEmbed(player: Player): EmbedBuilder {
   const pos = player.position ?? 0;
   const dur = info.duration ?? 0;
   const isStream = info.isStream;
-
-  const bar = isStream
-    ? "🔴 LIVE"
-    : `${formatDuration(pos)} ${progressBar(pos, dur)} ${formatDuration(dur)}`;
+  const requester = (track.requester as { username?: string })?.username ?? "Unknown";
 
   const twelveO = getTwelveO(player);
   const loopMode = player.repeatMode;
@@ -57,16 +54,25 @@ export function nowPlayingEmbed(player: Player): EmbedBuilder {
         ? "🔁 Queue"
         : "➡️ Off";
 
+  // Layout inspired by the mobile-player screenshot:
+  // title, artist, duration, progress bar, then the artwork.
+  const lines = [`**${truncate(info.author, 100)}**`];
+  if (isStream) {
+    lines.push("", "🔴 LIVE");
+  } else {
+    lines.push("", `\`${formatDuration(dur)}\``);
+    lines.push("");
+    lines.push(`${progressBar(pos, dur)}`);
+    lines.push(`\`${formatDuration(pos)} / ${formatDuration(dur)}\``);
+  }
+  lines.push("", `🔁 ${loopText}`);
+
   const embed = new EmbedBuilder()
     .setColor(getTrackColor(track))
     .setTitle(truncate(info.title, 256))
     .setURL(info.uri ?? null)
-    .setDescription(
-      `**${truncate(info.author, 100)}**\n\n${bar}\n\nLoop: ${loopText}`
-    )
-    .setFooter({
-      text: `Requested by ${(track.requester as { username?: string })?.username ?? "Unknown"}`,
-    })
+    .setDescription(lines.join("\n"))
+    .setFooter({ text: `Requested by ${requester}` })
     .setTimestamp();
 
   if (info.artworkUrl) {
