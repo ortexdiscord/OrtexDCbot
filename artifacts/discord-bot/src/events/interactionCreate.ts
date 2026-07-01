@@ -1,4 +1,4 @@
-import { Events, type Client, type ButtonInteraction } from "discord.js";
+import { Events, MessageFlags, type Client, type ButtonInteraction } from "discord.js";
 import { lavalink } from "../lavalink.js";
 import {
   errorEmbed,
@@ -12,6 +12,20 @@ import { withTimeout } from "../utils/timeout.js";
 
 export function registerInteractionCreateEvent(client: Client): void {
   client.on(Events.InteractionCreate, async (interaction) => {
+    // ── Autocomplete ─────────────────────────────────────────────────────────
+    if (interaction.isAutocomplete()) {
+      const command = client.commands.get(interaction.commandName);
+      if (command?.autocomplete) {
+        try {
+          await command.autocomplete(interaction);
+        } catch (err) {
+          console.error(`[Autocomplete] Error in /${interaction.commandName}:`, err);
+          await interaction.respond([]).catch(() => null);
+        }
+      }
+      return;
+    }
+
     // ── Slash commands ──────────────────────────────────────────────────────
     if (interaction.isChatInputCommand()) {
       const command = client.commands.get(interaction.commandName);
@@ -26,20 +40,17 @@ export function registerInteractionCreateEvent(client: Client): void {
         console.error(`[Command] Error in /${interaction.commandName}:`, err);
         const isTimeout =
           err instanceof Error && err.message.includes("timed out");
-        const reply = {
-          embeds: [
-            errorEmbed(
-              isTimeout
-                ? "Command timed out after 4 seconds. The bot may be under heavy load — try again."
-                : "Something went wrong. Please try again."
-            ),
-          ],
-          ephemeral: true,
-        };
+        const embed = errorEmbed(
+          isTimeout
+            ? "Command timed out after 4 seconds. The bot may be under heavy load — try again."
+            : "Something went wrong. Please try again."
+        );
         if (interaction.deferred || interaction.replied) {
-          await interaction.editReply(reply).catch(() => null);
+          await interaction.editReply({ embeds: [embed] }).catch(() => null);
         } else {
-          await interaction.reply(reply).catch(() => null);
+          await interaction
+            .reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
+            .catch(() => null);
         }
       }
       return;
@@ -54,7 +65,7 @@ export function registerInteractionCreateEvent(client: Client): void {
       if (!player) {
         await interaction.reply({
           embeds: [errorEmbed("No active player in this server.")],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -68,20 +79,17 @@ export function registerInteractionCreateEvent(client: Client): void {
         console.error("[Button] Error handling music button:", err);
         const isTimeout =
           err instanceof Error && err.message.includes("timed out");
-        const safeReply = {
-          embeds: [
-            errorEmbed(
-              isTimeout
-                ? "Button action timed out after 4 seconds. Please try again."
-                : "Could not process that action."
-            ),
-          ],
-          ephemeral: true,
-        };
+        const embed = errorEmbed(
+          isTimeout
+            ? "Button action timed out after 4 seconds. Please try again."
+            : "Could not process that action."
+        );
         if (interaction.deferred || interaction.replied) {
-          await interaction.editReply(safeReply).catch(() => null);
+          await interaction.editReply({ embeds: [embed] }).catch(() => null);
         } else if (!interaction.replied) {
-          await interaction.reply(safeReply).catch(() => null);
+          await interaction
+            .reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
+            .catch(() => null);
         }
       }
     }
@@ -100,7 +108,7 @@ async function handleMusicButton(
         if (!player.paused) await player.pause();
         await interaction.reply({
           embeds: [{ color: 0x5865f2, description: "⏸️  Paused." }],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         break;
 
@@ -108,7 +116,7 @@ async function handleMusicButton(
         if (player.paused) await player.resume();
         await interaction.reply({
           embeds: [{ color: 0x57f287, description: "▶️  Resumed." }],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         break;
 
@@ -116,7 +124,7 @@ async function handleMusicButton(
         await player.skip();
         await interaction.reply({
           embeds: [{ color: 0x5865f2, description: "⏭️  Skipped." }],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         break;
 
@@ -124,7 +132,7 @@ async function handleMusicButton(
         await player.destroy();
         await interaction.reply({
           embeds: [{ color: 0xed4245, description: "⏹️  Stopped and disconnected." }],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         break;
 
@@ -132,14 +140,14 @@ async function handleMusicButton(
         if (player.queue.tracks.length < 2) {
           await interaction.reply({
             embeds: [errorEmbed("Need at least 2 upcoming tracks to shuffle.")],
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
           return;
         }
         player.queue.shuffle();
         await interaction.reply({
           embeds: [{ color: 0x57f287, description: "🔀  Shuffled the queue." }],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         break;
       }
@@ -170,7 +178,7 @@ async function handleMusicButton(
                 : "➡️  **12o** disabled — playlist will stop when finished.",
             },
           ],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         break;
       }
@@ -178,7 +186,7 @@ async function handleMusicButton(
       case "music_queue": {
         await interaction.reply({
           embeds: [queueEmbed(player, 1)],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         break;
       }
@@ -191,7 +199,7 @@ async function handleMusicButton(
         const icons = { off: "➡️ Off", track: "🔂 Track", queue: "🔁 Queue" };
         await interaction.reply({
           embeds: [{ color: 0x5865f2, description: `Loop set to **${icons[next]}**.` }],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         break;
       }
@@ -201,7 +209,7 @@ async function handleMusicButton(
         if (!prev) {
           await interaction.reply({
             embeds: [errorEmbed("No previous track available.")],
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
           return;
         }
@@ -209,7 +217,7 @@ async function handleMusicButton(
         await player.skip();
         await interaction.reply({
           embeds: [{ color: 0x5865f2, description: "⏮️  Playing previous track." }],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         break;
       }
@@ -217,7 +225,7 @@ async function handleMusicButton(
       default:
         await interaction.reply({
           embeds: [errorEmbed("Unknown button.")],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
     }
 
@@ -242,11 +250,13 @@ async function handleMusicButton(
     }
   } catch (err) {
     console.error("[Button] Error handling music button:", err);
-    const safeReply = { embeds: [errorEmbed("Could not process that action.")], ephemeral: true };
+    const embed = errorEmbed("Could not process that action.");
     if (interaction.deferred) {
-      await interaction.editReply(safeReply).catch(() => null);
+      await interaction.editReply({ embeds: [embed] }).catch(() => null);
     } else if (!interaction.replied) {
-      await interaction.reply(safeReply).catch(() => null);
+      await interaction
+        .reply({ embeds: [embed], flags: MessageFlags.Ephemeral })
+        .catch(() => null);
     }
   }
 }

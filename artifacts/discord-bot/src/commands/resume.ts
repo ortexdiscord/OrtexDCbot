@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, MessageFlags } from "discord.js";
 import type { Command } from "./index.js";
 import { lavalink } from "../lavalink.js";
 import { errorEmbed, successEmbed, warnEmbed } from "../utils/embeds.js";
@@ -13,7 +13,7 @@ const resume: Command = {
     if (!player) {
       await interaction.reply({
         embeds: [errorEmbed("Nothing is playing right now.")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -21,7 +21,7 @@ const resume: Command = {
     if (!player.paused) {
       await interaction.reply({
         embeds: [warnEmbed("The track is not paused.")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -29,7 +29,7 @@ const resume: Command = {
     await player.resume();
     await interaction.reply({
       embeds: [successEmbed("Resumed playback.")],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

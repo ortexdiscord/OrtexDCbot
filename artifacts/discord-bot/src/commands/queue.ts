@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, MessageFlags } from "discord.js";
 import type { Command } from "./index.js";
 import { lavalink } from "../lavalink.js";
 import { errorEmbed, queueEmbed } from "../utils/embeds.js";
@@ -19,7 +19,7 @@ const queue: Command = {
     if (!player?.queue.current) {
       await interaction.reply({
         embeds: [errorEmbed("The queue is empty. Use `/play` to add songs!")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -27,7 +27,7 @@ const queue: Command = {
     const page = interaction.options.getInteger("page") ?? 1;
     await interaction.reply({
       embeds: [queueEmbed(player, page)],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

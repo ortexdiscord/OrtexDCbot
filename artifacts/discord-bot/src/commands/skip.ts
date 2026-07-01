@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, MessageFlags } from "discord.js";
 import type { Command } from "./index.js";
 import { lavalink } from "../lavalink.js";
 import { errorEmbed, successEmbed } from "../utils/embeds.js";
@@ -20,7 +20,7 @@ const skip: Command = {
     if (!player?.playing) {
       await interaction.reply({
         embeds: [errorEmbed("Nothing is playing right now.")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -44,7 +44,7 @@ const skip: Command = {
             : "Skipped to the next track."
         ),
       ],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

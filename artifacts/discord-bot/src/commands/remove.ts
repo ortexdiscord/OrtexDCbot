@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, MessageFlags } from "discord.js";
 import type { Command } from "./index.js";
 import { lavalink } from "../lavalink.js";
 import { errorEmbed, successEmbed } from "../utils/embeds.js";
@@ -21,7 +21,7 @@ const remove: Command = {
     if (!player || player.queue.tracks.length === 0) {
       await interaction.reply({
         embeds: [errorEmbed("The queue is empty.")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -36,7 +36,7 @@ const remove: Command = {
             `Position **${pos}** is out of range. Queue has **${player.queue.tracks.length}** track(s).`
           ),
         ],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -50,7 +50,7 @@ const remove: Command = {
           `Removed **${truncate(removed.info.title, 80)}** from position #${pos}.`
         ),
       ],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

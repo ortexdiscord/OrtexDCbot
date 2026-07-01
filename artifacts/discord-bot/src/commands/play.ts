@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, GuildMember } from "discord.js";
+import { SlashCommandBuilder, GuildMember, MessageFlags } from "discord.js";
 import type { Command } from "./index.js";
 import { lavalink } from "../lavalink.js";
 import {
@@ -21,6 +21,7 @@ const play: Command = {
         .setName("query")
         .setDescription("Song name, YouTube URL, Spotify URL, or playlist URL")
         .setRequired(true)
+        .setAutocomplete(true)
     ),
 
   async execute(interaction) {
@@ -28,12 +29,12 @@ const play: Command = {
     if (!member.voice.channelId) {
       await interaction.reply({
         embeds: [errorEmbed("You need to be in a voice channel to play music.")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Fetch default volume from guild settings
     let defaultVolume = 80;
@@ -59,6 +60,16 @@ const play: Command = {
     if (!player.connected) await player.connect();
 
     const query = interaction.options.getString("query", true);
+
+    // Show the user what the bot is searching for
+    await interaction.editReply({
+      embeds: [
+        infoEmbed(
+          "🔍 Searching…",
+          `Looking for **${query}**…`
+        ),
+      ],
+    });
 
     // Detect URLs — pass raw, let Lavalink resolve source automatically.
     // For plain text queries, force ytsearch so it doesn't guess wrongly.
@@ -119,6 +130,47 @@ const play: Command = {
           ),
         ],
       });
+    }
+  },
+
+  async autocomplete(interaction) {
+    const query = interaction.options.getString("query", true).trim();
+    if (!query) {
+      await interaction.respond([]);
+      return;
+    }
+
+    // Show a live "Search for …" suggestion, plus real results if a player exists
+    const player = lavalink.getPlayer(interaction.guildId!);
+    if (!player) {
+      await interaction.respond([
+        { name: `🔍 Search for: ${query.slice(0, 80)}`, value: query },
+      ]);
+      return;
+    }
+
+    try {
+      const isUrl = /^https?:\/\//i.test(query);
+      const searchQuery = isUrl
+        ? { query }
+        : { query, source: "ytsearch" as const };
+      const result = await player.search(searchQuery, interaction.user);
+      const tracks = (result.tracks as Track[]).slice(0, 5);
+      const choices = tracks.map((t) => ({
+        name: `${t.info.title} — ${t.info.author}`.slice(0, 100),
+        value: t.info.uri || query,
+      }));
+      if (choices.length === 0) {
+        choices.push({
+          name: `🔍 Search for: ${query.slice(0, 80)}`,
+          value: query,
+        });
+      }
+      await interaction.respond(choices);
+    } catch {
+      await interaction.respond([
+        { name: `🔍 Search for: ${query.slice(0, 80)}`, value: query },
+      ]);
     }
   },
 };

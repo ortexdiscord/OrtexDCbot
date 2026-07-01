@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, MessageFlags } from "discord.js";
 import type { Command } from "./index.js";
 import { lavalink } from "../lavalink.js";
 import { errorEmbed, successEmbed } from "../utils/embeds.js";
@@ -13,7 +13,7 @@ const stop: Command = {
     if (!player) {
       await interaction.reply({
         embeds: [errorEmbed("I'm not in a voice channel.")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -21,7 +21,7 @@ const stop: Command = {
     await player.destroy();
     await interaction.reply({
       embeds: [successEmbed("Stopped the music and left the voice channel.")],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

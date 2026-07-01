@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, MessageFlags } from "discord.js";
 import type { Command } from "./index.js";
 import { lavalink } from "../lavalink.js";
 import { errorEmbed, successEmbed } from "../utils/embeds.js";
@@ -17,7 +17,7 @@ const shuffle: Command = {
             "Need at least 2 tracks in the queue to shuffle. Use `/play` to add more!"
           ),
         ],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -29,7 +29,7 @@ const shuffle: Command = {
           `🔀 Shuffled **${player.queue.tracks.length}** upcoming tracks.`
         ),
       ],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

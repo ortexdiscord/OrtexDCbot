@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, GuildMember } from "discord.js";
+import { SlashCommandBuilder, GuildMember, MessageFlags } from "discord.js";
 import type { Command } from "./index.js";
 import { lavalink } from "../lavalink.js";
 import { errorEmbed, successEmbed, infoEmbed } from "../utils/embeds.js";
@@ -54,13 +54,13 @@ const playlist: Command = {
       if (!player?.queue.current) {
         await interaction.reply({
           embeds: [errorEmbed("Nothing is playing to save.")],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
 
       const name = interaction.options.getString("name", true).trim();
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const current = player.queue.current as unknown as Track;
       const upcoming = player.queue.tracks as unknown as Track[];
@@ -122,12 +122,12 @@ const playlist: Command = {
       if (!member?.voice.channelId) {
         await interaction.reply({
           embeds: [errorEmbed("You must be in a voice channel to load a playlist.")],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
 
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const [pl] = await db
         .select()
@@ -220,7 +220,7 @@ const playlist: Command = {
               "You have no saved playlists.\nUse `/playlist save` while music is playing to create one!"
             ),
           ],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -230,7 +230,7 @@ const playlist: Command = {
         embeds: [
           infoEmbed(`Your Playlists (${playlists.length})`, lines.join("\n")),
         ],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -252,7 +252,7 @@ const playlist: Command = {
       if (!pl) {
         await interaction.reply({
           embeds: [errorEmbed(`No playlist named **${name}** found.`)],
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -264,7 +264,7 @@ const playlist: Command = {
 
       await interaction.reply({
         embeds: [successEmbed(`Deleted playlist **${name}**.`)],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, MessageFlags } from "discord.js";
 import type { Command } from "./index.js";
 import { lavalink } from "../lavalink.js";
 import { errorEmbed, successEmbed } from "../utils/embeds.js";
@@ -23,7 +23,7 @@ const volume: Command = {
     if (!player) {
       await interaction.reply({
         embeds: [errorEmbed("Nothing is playing right now.")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -32,7 +32,7 @@ const volume: Command = {
     if (level === null) {
       await interaction.reply({
         embeds: [successEmbed(`Current volume is **${player.volume}%**.`)],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -54,7 +54,7 @@ const volume: Command = {
 
     await interaction.reply({
       embeds: [successEmbed(`Volume set to **${level}%**.`)],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

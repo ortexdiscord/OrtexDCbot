@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, MessageFlags } from "discord.js";
 import type { Command } from "./index.js";
 import { lavalink } from "../lavalink.js";
 import { errorEmbed, nowPlayingEmbed, musicPanelButtons } from "../utils/embeds.js";
@@ -13,7 +13,7 @@ const nowplaying: Command = {
     if (!player?.queue.current) {
       await interaction.reply({
         embeds: [errorEmbed("Nothing is playing right now.")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }

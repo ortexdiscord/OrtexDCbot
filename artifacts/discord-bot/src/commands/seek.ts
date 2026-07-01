@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder, MessageFlags } from "discord.js";
 import type { Command } from "./index.js";
 import { lavalink } from "../lavalink.js";
 import { errorEmbed, successEmbed } from "../utils/embeds.js";
@@ -20,7 +20,7 @@ const seek: Command = {
     if (!player?.queue.current) {
       await interaction.reply({
         embeds: [errorEmbed("Nothing is playing right now.")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -28,7 +28,7 @@ const seek: Command = {
     if (player.queue.current.info.isStream) {
       await interaction.reply({
         embeds: [errorEmbed("Cannot seek in a live stream.")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -39,7 +39,7 @@ const seek: Command = {
     if (ms === null) {
       await interaction.reply({
         embeds: [errorEmbed("Invalid timestamp. Use format `mm:ss` or `hh:mm:ss`.")],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -52,7 +52,7 @@ const seek: Command = {
             `Timestamp exceeds track duration (${formatDuration(duration)}).`
           ),
         ],
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -60,7 +60,7 @@ const seek: Command = {
     await player.seek(ms);
     await interaction.reply({
       embeds: [successEmbed(`Seeked to **${formatDuration(ms)}**.`)],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };
