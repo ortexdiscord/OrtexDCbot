@@ -1,0 +1,13 @@
+app = "ortex-dcbot"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[processes]
+  app = "pnpm --filter @workspace/discord-bot run start"
+
+# This machine stays on 24/7.
+# No HTTP service is needed because a Discord bot is a long-running background process.
+[deploy]
+  strategy = "immediate"
