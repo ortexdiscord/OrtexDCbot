@@ -6,9 +6,9 @@ export function registerReadyEvent(client: Client): void {
   client.once("ready", async (c) => {
     console.log(`[Bot] Logged in as ${c.user.tag}`);
 
-    // Set initial presence
+    // Set initial presence. Custom status for bots requires empty name + state.
     c.user.setPresence({
-      activities: [{ name: "🎵 /play to add music", type: ActivityType.Custom }],
+      activities: [{ name: "", state: "🎵 /play to add music", type: ActivityType.Custom }],
       status: "online",
     });
 

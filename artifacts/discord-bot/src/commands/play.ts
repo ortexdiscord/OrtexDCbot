@@ -33,7 +33,7 @@ const play: Command = {
       return;
     }
 
-    await interaction.deferReply();
+    await interaction.deferReply({ ephemeral: true });
 
     // Fetch default volume from guild settings
     let defaultVolume = 80;

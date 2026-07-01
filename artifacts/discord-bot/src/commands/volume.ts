@@ -54,6 +54,7 @@ const volume: Command = {
 
     await interaction.reply({
       embeds: [successEmbed(`Volume set to **${level}%**.`)],
+      ephemeral: true,
     });
   },
 };

@@ -2,6 +2,7 @@ import { client } from "./bot.js";
 import { config } from "./config.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
+import { registerVoiceStateUpdateEvent } from "./events/voiceStateUpdate.js";
 import {
   play,
   skip,
@@ -41,6 +42,7 @@ for (const cmd of commands) {
 // Register events
 registerReadyEvent(client);
 registerInteractionCreateEvent(client);
+registerVoiceStateUpdateEvent(client);
 
 // Forward Discord voice state payloads to Lavalink
 // Must be done after lavalink is imported (lazy import to avoid circular on init)

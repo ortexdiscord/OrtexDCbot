@@ -20,7 +20,7 @@ const nowplaying: Command = {
 
     await interaction.reply({
       embeds: [nowPlayingEmbed(player)],
-      components: [musicPanelButtons(player)],
+      components: musicPanelButtons(player),
     });
   },
 };

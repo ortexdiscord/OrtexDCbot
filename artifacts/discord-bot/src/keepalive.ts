@@ -1,11 +1,11 @@
 import { ActivityType, type Client } from "discord.js";
 
 const IDLE_STATUSES = [
-  { name: "🎵 /play to add music", type: ActivityType.Custom },
-  { name: "🎶 Ready to rock", type: ActivityType.Custom },
-  { name: "🎧 Powered by Lavalink", type: ActivityType.Custom },
-  { name: "🎼 Type /play to start", type: ActivityType.Custom },
-  { name: "🔊 Waiting for your queue", type: ActivityType.Custom },
+  "🎵 /play to add music",
+  "🎶 Ready to rock",
+  "🎧 Powered by Lavalink",
+  "🎼 Type /play to start",
+  "🔊 Waiting for your queue",
 ];
 
 let _client: Client | null = null;
@@ -20,15 +20,15 @@ export function initKeepalive(client: Client): void {
   _presenceInterval = setInterval(() => {
     if (!_client?.isReady()) return;
     if (_currentTrack) {
-      // Already showing the track — refresh it
       _client.user.setPresence({
         activities: [{ name: `🎵 ${_currentTrack}`, type: ActivityType.Listening }],
         status: "online",
       });
     } else {
-      const status = IDLE_STATUSES[_idleIndex % IDLE_STATUSES.length]!;
+      const text = IDLE_STATUSES[_idleIndex % IDLE_STATUSES.length]!;
       _client.user.setPresence({
-        activities: [{ name: status.name, type: status.type }],
+        // Custom status for bots: name must be empty, text goes in state
+        activities: [{ name: "", state: text, type: ActivityType.Custom }],
         status: "online",
       });
       _idleIndex++;
@@ -65,9 +65,9 @@ export function updatePresence(track: string | null): void {
       status: "online",
     });
   } else {
-    const status = IDLE_STATUSES[_idleIndex % IDLE_STATUSES.length]!;
+    const text = IDLE_STATUSES[_idleIndex % IDLE_STATUSES.length]!;
     _client.user.setPresence({
-      activities: [{ name: status.name, type: status.type }],
+      activities: [{ name: "", state: text, type: ActivityType.Custom }],
       status: "online",
     });
   }

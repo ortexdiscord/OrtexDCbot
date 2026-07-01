@@ -47,6 +47,7 @@ const loop: Command = {
     };
     await interaction.reply({
       embeds: [successEmbed(`Loop mode set to **${icons[mode]}**.`)],
+      ephemeral: true,
     });
   },
 };

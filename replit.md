@@ -63,7 +63,13 @@ A Discord music bot powered by Lavalink, discord.js v14, and PostgreSQL. Plays m
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Bot status must be **online** (not invisible/offline) — use `status: "online"` with every presence update, and use custom-status format `{ name: "", state: text, type: ActivityType.Custom }` for idle statuses.
+- Only the **now-playing music panel** should be a persistent channel message. All command responses and button confirmations should be **ephemeral** (only visible to the user).
+- When a new track starts, the old music panel should be deleted and replaced by a fresh one so the channel stays uncluttered.
+- Empty-queue auto-leave should wait **3 minutes** before disconnecting.
+- If the voice channel is empty of humans for **1 minute**, the bot should leave automatically and send a brief status message.
+- Music panel should look like a mobile player: large artwork image, title/artist, progress bar + time, playback buttons (Shuffle, Prev, Play/Pause, Next), and a second row with **12o** (continuous playlist loop) and Queue buttons.
+- **12o** feature: when enabled, the bot re-adds the previously-played tracks when the queue ends and keeps playing continuously until stopped or disabled.
 
 ## Gotchas
 

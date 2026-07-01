@@ -29,6 +29,7 @@ const shuffle: Command = {
           `🔀 Shuffled **${player.queue.tracks.length}** upcoming tracks.`
         ),
       ],
+      ephemeral: true,
     });
   },
 };

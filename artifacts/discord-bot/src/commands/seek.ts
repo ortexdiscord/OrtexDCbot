@@ -60,6 +60,7 @@ const seek: Command = {
     await player.seek(ms);
     await interaction.reply({
       embeds: [successEmbed(`Seeked to **${formatDuration(ms)}**.`)],
+      ephemeral: true,
     });
   },
 };

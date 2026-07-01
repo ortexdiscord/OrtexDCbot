@@ -44,6 +44,7 @@ const skip: Command = {
             : "Skipped to the next track."
         ),
       ],
+      ephemeral: true,
     });
   },
 };

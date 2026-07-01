@@ -127,7 +127,7 @@ const playlist: Command = {
         return;
       }
 
-      await interaction.deferReply();
+      await interaction.deferReply({ ephemeral: true });
 
       const [pl] = await db
         .select()

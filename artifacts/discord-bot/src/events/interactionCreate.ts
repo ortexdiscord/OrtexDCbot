@@ -1,6 +1,12 @@
 import { Events, type Client, type ButtonInteraction } from "discord.js";
 import { lavalink } from "../lavalink.js";
-import { errorEmbed, nowPlayingEmbed, musicPanelButtons } from "../utils/embeds.js";
+import {
+  errorEmbed,
+  nowPlayingEmbed,
+  musicPanelButtons,
+  queueEmbed,
+  successEmbed,
+} from "../utils/embeds.js";
 import type { Track } from "lavalink-client";
 
 export function registerInteractionCreateEvent(client: Client): void {
@@ -86,6 +92,61 @@ async function handleMusicButton(
         });
         break;
 
+      case "music_shuffle": {
+        if (player.queue.tracks.length < 2) {
+          await interaction.reply({
+            embeds: [errorEmbed("Need at least 2 upcoming tracks to shuffle.")],
+            ephemeral: true,
+          });
+          return;
+        }
+        player.queue.shuffle();
+        await interaction.reply({
+          embeds: [{ color: 0x57f287, description: "🔀  Shuffled the queue." }],
+          ephemeral: true,
+        });
+        break;
+      }
+
+      case "music_12o": {
+        const current = player.twelveO as boolean | undefined;
+        const next = !current;
+        player.twelveO = next;
+        if (next) {
+          // Capture a stable snapshot of the current playlist for looping
+          const currentTrack = player.queue.current as Track | null;
+          const previous = (player.queue.previous as Track[] | undefined) ?? [];
+          const upcoming = (player.queue.tracks as Track[] | undefined) ?? [];
+          player.twelveOSnapshot = [
+            ...previous,
+            ...(currentTrack ? [currentTrack] : []),
+            ...upcoming,
+          ];
+        } else {
+          player.twelveOSnapshot = undefined;
+        }
+        await interaction.reply({
+          embeds: [
+            {
+              color: next ? 0x57f287 : 0x5865f2,
+              description: next
+                ? "🔁  **12o** enabled — playlist will loop continuously."
+                : "➡️  **12o** disabled — playlist will stop when finished.",
+            },
+          ],
+          ephemeral: true,
+        });
+        break;
+      }
+
+      case "music_queue": {
+        await interaction.reply({
+          embeds: [queueEmbed(player, 1)],
+          ephemeral: true,
+        });
+        break;
+      }
+
       case "music_loop": {
         const modes = ["off", "track", "queue"] as const;
         const idx = modes.indexOf(player.repeatMode as (typeof modes)[number]);
@@ -125,7 +186,7 @@ async function handleMusicButton(
     }
 
     // Update the original now-playing embed/buttons after action
-    if (id !== "music_stop" && player.queue.current) {
+    if (id !== "music_stop" && id !== "music_queue" && player.queue.current) {
       const panelMsgId = player["panelMessageId"] as string | undefined;
       const panelChanId = player["panelChannelId"] as string | undefined;
       if (panelMsgId && panelChanId) {
@@ -135,7 +196,7 @@ async function handleMusicButton(
             const msg = await ch.messages.fetch(panelMsgId);
             await msg.edit({
               embeds: [nowPlayingEmbed(player)],
-              components: [musicPanelButtons(player)],
+              components: musicPanelButtons(player),
             });
           }
         } catch {

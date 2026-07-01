@@ -21,6 +21,7 @@ const stop: Command = {
     await player.destroy();
     await interaction.reply({
       embeds: [successEmbed("Stopped the music and left the voice channel.")],
+      ephemeral: true,
     });
   },
 };

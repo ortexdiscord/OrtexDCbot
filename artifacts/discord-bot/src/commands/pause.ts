@@ -27,7 +27,10 @@ const pause: Command = {
     }
 
     await player.pause();
-    await interaction.reply({ embeds: [successEmbed("Paused the track.")] });
+    await interaction.reply({
+      embeds: [successEmbed("Paused the track.")],
+      ephemeral: true,
+    });
   },
 };
 

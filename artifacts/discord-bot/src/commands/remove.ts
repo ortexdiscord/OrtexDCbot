@@ -50,6 +50,7 @@ const remove: Command = {
           `Removed **${truncate(removed.info.title, 80)}** from position #${pos}.`
         ),
       ],
+      ephemeral: true,
     });
   },
 };

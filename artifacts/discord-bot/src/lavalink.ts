@@ -30,11 +30,11 @@ export const lavalink = new LavalinkManager({
       destroyPlayer: false,
     },
     onEmptyQueue: {
-      destroyAfterMs: 60_000,
+      destroyAfterMs: 3 * 60_000, // 3 minutes of no music before leaving
     },
   },
   queueOptions: {
-    maxPreviousTracks: 20,
+    maxPreviousTracks: 100,
   },
 });
 
@@ -60,12 +60,28 @@ lavalink.on("trackStart", async (player: Player, track: Track | null, _payload: 
   const channel = client.channels.cache.get(channelId);
   if (!channel?.isTextBased() || !("send" in channel)) return;
 
+  const p = player as unknown as Record<string, unknown>;
+
+  // Delete the old music panel so only the current one is visible
+  const oldPanelMsgId = p["panelMessageId"] as string | undefined;
+  const oldPanelChanId = p["panelChannelId"] as string | undefined;
+  if (oldPanelMsgId && oldPanelChanId) {
+    try {
+      const oldCh = client.channels.cache.get(oldPanelChanId);
+      if (oldCh?.isTextBased()) {
+        const oldMsg = await oldCh.messages.fetch(oldPanelMsgId);
+        await oldMsg.delete();
+      }
+    } catch {
+      // old panel may already be deleted
+    }
+  }
+
   const embed = nowPlayingEmbed(player);
   const buttons = musicPanelButtons(player);
 
   try {
-    const msg = await (channel as { send: Function }).send({ embeds: [embed], components: [buttons] });
-    const p = player as unknown as Record<string, unknown>;
+    const msg = await (channel as { send: Function }).send({ embeds: [embed], components: buttons });
     p["panelMessageId"] = msg.id;
     p["panelChannelId"] = channelId;
   } catch {
@@ -90,28 +106,58 @@ lavalink.on("trackStart", async (player: Player, track: Track | null, _payload: 
   }
 });
 
-lavalink.on("trackEnd", (player: Player, _track: Track | null, _payload: TrackEndEvent) => {
-  const p = player as unknown as Record<string, unknown>;
-  delete p["panelMessageId"];
-});
-
 lavalink.on("queueEnd", async (player: Player) => {
   updatePresence(null);
+
+  const p = player as unknown as Record<string, unknown>;
+  const twelveO = p["twelveO"] as boolean | undefined;
+  const snapshot = (p["twelveOSnapshot"] as Track[] | undefined) ?? [];
+
+  // 12o mode: re-add the stable playlist snapshot and keep playing continuously
+  if (twelveO && snapshot.length > 0) {
+    await player.queue.add(snapshot);
+    await player.play();
+    return;
+  }
 
   const channel = client.channels.cache.get(player.textChannelId ?? "");
   if (!channel?.isTextBased() || !("send" in channel)) return;
 
   try {
-    await (channel as { send: Function }).send({
+    const msg = await (channel as { send: Function }).send({
       embeds: [
         successEmbed(
-          "Queue finished! Add more songs with `/play`. I'll leave in 60 seconds if nothing is added."
+          "Queue finished! Add more songs with `/play`. I'll leave in 3 minutes if nothing is added."
         ),
       ],
     });
+    // Keep the chat clean: delete this status message after 10 seconds
+    setTimeout(() => msg.delete().catch(() => null), 10_000);
   } catch {
     // ignore
   }
+});
+
+lavalink.on("playerDestroy", async (player: Player, _reason?: string) => {
+  const p = player as unknown as Record<string, unknown>;
+  const panelMsgId = p["panelMessageId"] as string | undefined;
+  const panelChanId = p["panelChannelId"] as string | undefined;
+
+  if (panelMsgId && panelChanId) {
+    try {
+      const ch = client.channels.cache.get(panelChanId);
+      if (ch?.isTextBased()) {
+        const msg = await ch.messages.fetch(panelMsgId);
+        await msg.delete();
+      }
+    } catch {
+      // panel may already be deleted
+    }
+    delete p["panelMessageId"];
+    delete p["panelChannelId"];
+  }
+
+  updatePresence(null);
 });
 
 lavalink.on("playerDisconnect", (_player: Player) => {

@@ -25,7 +25,10 @@ const queue: Command = {
     }
 
     const page = interaction.options.getInteger("page") ?? 1;
-    await interaction.reply({ embeds: [queueEmbed(player, page)] });
+    await interaction.reply({
+      embeds: [queueEmbed(player, page)],
+      ephemeral: true,
+    });
   },
 };
 

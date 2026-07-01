@@ -27,7 +27,10 @@ const resume: Command = {
     }
 
     await player.resume();
-    await interaction.reply({ embeds: [successEmbed("Resumed playback.")] });
+    await interaction.reply({
+      embeds: [successEmbed("Resumed playback.")],
+      ephemeral: true,
+    });
   },
 };
 

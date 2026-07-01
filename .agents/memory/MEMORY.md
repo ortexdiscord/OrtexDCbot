@@ -1,1 +1,4 @@
 - [Lavalink-client v2 API](lavalink-client-v2.md) — key API surface: search is on player not manager, node events on lavalink.nodeManager, secure not ssl
+- [Discord music panel lifecycle](discord-music-panel.md) — replace panel on trackStart; final cleanup on playerDestroy; don't clear panelMessageId on trackEnd
+- [Discord 12o continuous playlist loop](discord-12o-loop.md) — store a stable playlist snapshot when enabling; re-add it on queueEnd instead of using ever-growing queue.previous
+- [Discord bot custom status](discord-custom-status.md) — use `{ name: "", state, type: ActivityType.Custom }` plus `status: "online"` to appear online
