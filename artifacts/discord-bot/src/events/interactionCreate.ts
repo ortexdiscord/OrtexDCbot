@@ -8,6 +8,7 @@ import {
   successEmbed,
 } from "../utils/embeds.js";
 import type { Track } from "lavalink-client";
+import { withTimeout } from "../utils/timeout.js";
 
 export function registerInteractionCreateEvent(client: Client): void {
   client.on(Events.InteractionCreate, async (interaction) => {
@@ -17,11 +18,22 @@ export function registerInteractionCreateEvent(client: Client): void {
       if (!command) return;
 
       try {
-        await command.execute(interaction);
+        await withTimeout(
+          command.execute(interaction),
+          "Command timed out after 4 seconds. Please try again."
+        );
       } catch (err) {
         console.error(`[Command] Error in /${interaction.commandName}:`, err);
+        const isTimeout =
+          err instanceof Error && err.message.includes("timed out");
         const reply = {
-          embeds: [errorEmbed("Something went wrong. Please try again.")],
+          embeds: [
+            errorEmbed(
+              isTimeout
+                ? "Command timed out after 4 seconds. The bot may be under heavy load — try again."
+                : "Something went wrong. Please try again."
+            ),
+          ],
           ephemeral: true,
         };
         if (interaction.deferred || interaction.replied) {
@@ -47,7 +59,31 @@ export function registerInteractionCreateEvent(client: Client): void {
         return;
       }
 
-      await handleMusicButton(interaction, id, player);
+      try {
+        await withTimeout(
+          handleMusicButton(interaction, id, player),
+          "Button action timed out after 4 seconds. Please try again."
+        );
+      } catch (err) {
+        console.error("[Button] Error handling music button:", err);
+        const isTimeout =
+          err instanceof Error && err.message.includes("timed out");
+        const safeReply = {
+          embeds: [
+            errorEmbed(
+              isTimeout
+                ? "Button action timed out after 4 seconds. Please try again."
+                : "Could not process that action."
+            ),
+          ],
+          ephemeral: true,
+        };
+        if (interaction.deferred || interaction.replied) {
+          await interaction.editReply(safeReply).catch(() => null);
+        } else if (!interaction.replied) {
+          await interaction.reply(safeReply).catch(() => null);
+        }
+      }
     }
   });
 }
