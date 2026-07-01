@@ -115,7 +115,12 @@ export function musicPanelButtons(
       .setCustomId("music_queue")
       .setEmoji("📋")
       .setStyle(ButtonStyle.Secondary)
-      .setLabel("Queue")
+      .setLabel("Queue"),
+    new ButtonBuilder()
+      .setCustomId("music_stop")
+      .setEmoji("⏹️")
+      .setStyle(ButtonStyle.Danger)
+      .setLabel("Stop")
   );
 
   return [playbackRow, extraRow];

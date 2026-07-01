@@ -35,9 +35,11 @@ export function registerVoiceStateUpdateEvent(client: Client): void {
         const textChannel = client.channels.cache.get(textChannelId);
         if (textChannel?.isTextBased() && "send" in textChannel) {
           try {
-            await (textChannel as { send: Function }).send({
+            const msg = await (textChannel as { send: Function }).send({
               embeds: [successEmbed("Left the voice channel because it was empty for 1 minute.")],
             });
+            // Keep the chat clean: delete this status message after 60 seconds
+            setTimeout(() => msg.delete().catch(() => null), 60_000);
           } catch {
             // ignore
           }

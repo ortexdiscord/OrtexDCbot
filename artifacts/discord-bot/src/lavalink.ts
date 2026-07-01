@@ -131,8 +131,8 @@ lavalink.on("queueEnd", async (player: Player) => {
         ),
       ],
     });
-    // Keep the chat clean: delete this status message after 10 seconds
-    setTimeout(() => msg.delete().catch(() => null), 10_000);
+    // Keep the chat clean: delete this status message after 60 seconds
+    setTimeout(() => msg.delete().catch(() => null), 60_000);
   } catch {
     // ignore
   }
